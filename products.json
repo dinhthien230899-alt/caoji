@@ -1,55 +1,75 @@
 [
   {
     "id": "gizeh-original",
-    "name": "GIZEH Original",
+    "name": "GIZEH Original（欧税版）",
     "category": "烟纸配件",
     "price": 180,
     "stock": 20,
     "spec": "烟纸配件 一盒50片 / 一片50张",
     "image": "assets/products/gizeh-original.jpg",
     "alt": "GIZEH Original 吉致手卷烟纸经典蓝盒",
-    "details": ["assets/details/detail-57.jpg","assets/details/detail-58.jpg","assets/details/detail-59.jpg","assets/details/detail-60.jpg"],
+    "details": [
+      "assets/details/detail-57.jpg",
+      "assets/details/detail-58.jpg",
+      "assets/details/detail-59.jpg",
+      "assets/details/detail-60.jpg"
+    ],
     "featured": false
   },
   {
     "id": "honeypuff-lightly-pink",
-    "name": "HoneyPuff Lightly Pink",
+    "name": "HoneyPuff Lightly Pink（欧税版）",
     "category": "烟纸配件",
     "price": 420,
     "stock": 15,
     "spec": "烟纸配件 一盒50片 / 一片50张",
     "image": "assets/products/honeypuff-lightly-pink.jpg",
     "alt": "HoneyPuff Lightly Pink 轻柔粉红卷烟纸",
-    "details": ["assets/details/detail-61.jpg","assets/details/detail-62.jpg","assets/details/detail-63.jpg","assets/details/detail-64.jpg"],
+    "details": [
+      "assets/details/detail-61.jpg",
+      "assets/details/detail-62.jpg",
+      "assets/details/detail-63.jpg",
+      "assets/details/detail-64.jpg"
+    ],
     "featured": false
   },
   {
     "id": "ocb-slim",
-    "name": "OCB Slim",
+    "name": "OCB Slim（欧税版）",
     "category": "烟纸配件",
     "price": 288,
     "stock": 18,
     "spec": "烟纸配件 一盒50片 / 一片50张",
     "image": "assets/products/ocb-slim.jpg",
     "alt": "OCB Slim 经典黑银卷烟纸",
-    "details": ["assets/details/detail-65.jpg","assets/details/detail-66.jpg","assets/details/detail-67.jpg","assets/details/detail-68.jpg"],
+    "details": [
+      "assets/details/detail-65.jpg",
+      "assets/details/detail-66.jpg",
+      "assets/details/detail-67.jpg",
+      "assets/details/detail-68.jpg"
+    ],
     "featured": false
   },
   {
     "id": "gizeh-fine-red",
-    "name": "GIZEH Fine Red",
+    "name": "GIZEH Fine Red（欧税版）",
     "category": "烟纸配件",
     "price": 180,
     "stock": 25,
     "spec": "烟纸配件 一盒50片 / 一片50张",
     "image": "assets/products/gizeh-fine-red.jpg",
     "alt": "GIZEH Fine Red 经典红标卷烟纸",
-    "details": ["assets/details/detail-69.jpg","assets/details/detail-70.jpg","assets/details/detail-71.jpg","assets/details/detail-72.jpg"],
+    "details": [
+      "assets/details/detail-69.jpg",
+      "assets/details/detail-70.jpg",
+      "assets/details/detail-71.jpg",
+      "assets/details/detail-72.jpg"
+    ],
     "featured": false
   },
   {
     "id": "party-in-house-slim-long-168",
-    "name": "Party in House Slim Long 168",
+    "name": "Party in House Slim Long 168（欧税版）",
     "category": "配件滤嘴",
     "price": 48,
     "stock": 30,
@@ -61,7 +81,7 @@
   },
   {
     "id": "party-in-house-slim-252",
-    "name": "Party in House Slim 252",
+    "name": "Party in House Slim 252（欧税版）",
     "category": "配件滤嘴",
     "price": 52,
     "stock": 25,
@@ -73,7 +93,7 @@
   },
   {
     "id": "party-in-house-regular-138",
-    "name": "Party in House Regular 138",
+    "name": "Party in House Regular 138（欧税版）",
     "category": "配件滤嘴",
     "price": 58,
     "stock": 20,
@@ -85,194 +105,266 @@
   },
   {
     "id": "drum-bright-blue",
-    "name": "DRUM Bright Blue",
+    "name": "DRUM Bright Blue（欧税版）",
     "category": "手卷烟丝",
     "price": 82,
     "stock": 15,
     "spec": "手卷烟丝 50g",
     "image": "assets/products/drum-bright-blue.jpg",
     "alt": "DRUM Bright Blue 手卷烟丝",
-    "details": ["assets/details/detail-01.jpg","assets/details/detail-02.jpg","assets/details/detail-03.jpg","assets/details/detail-04.jpg","assets/details/detail-05.jpg"],
+    "details": [
+      "assets/details/detail-01.jpg",
+      "assets/details/detail-02.jpg",
+      "assets/details/detail-03.jpg",
+      "assets/details/detail-04.jpg",
+      "assets/details/detail-05.jpg"
+    ],
     "featured": true
   },
   {
     "id": "drum-original",
-    "name": "DRUM The Original",
+    "name": "DRUM The Original（欧税版）",
     "category": "手卷烟丝",
     "price": 85,
     "stock": 12,
     "spec": "手卷烟丝 50g",
     "image": "assets/products/drum-original.jpg",
     "alt": "DRUM The Original 手卷烟丝",
-    "details": ["assets/details/detail-06.jpg","assets/details/detail-07.jpg","assets/details/detail-08.jpg","assets/details/detail-09.jpg","assets/details/detail-10.jpg"],
+    "details": [
+      "assets/details/detail-06.jpg",
+      "assets/details/detail-07.jpg",
+      "assets/details/detail-08.jpg",
+      "assets/details/detail-09.jpg",
+      "assets/details/detail-10.jpg"
+    ],
     "featured": false
   },
   {
     "id": "mac-baren-original-choice",
-    "name": "Mac Baren Original Choice",
+    "name": "Mac Baren Original Choice（欧税版）",
     "category": "手卷烟丝",
     "price": 75,
     "stock": 20,
     "spec": "手卷烟丝 40g",
     "image": "assets/products/mac-baren-original-choice.jpg",
     "alt": "Mac Baren Original Choice 手卷烟丝",
-    "details": ["assets/details/detail-11.jpg","assets/details/detail-12.jpg","assets/details/detail-13.jpg","assets/details/detail-14.jpg","assets/details/detail-15.jpg"],
+    "details": [
+      "assets/details/detail-11.jpg",
+      "assets/details/detail-12.jpg",
+      "assets/details/detail-13.jpg",
+      "assets/details/detail-14.jpg",
+      "assets/details/detail-15.jpg"
+    ],
     "featured": false
   },
   {
     "id": "mac-baren-aromatic-choice",
-    "name": "Mac Baren Aromatic Choice",
+    "name": "Mac Baren Aromatic Choice（欧税版）",
     "category": "手卷烟丝",
     "price": 75,
     "stock": 18,
     "spec": "手卷烟丝 40g",
     "image": "assets/products/mac-baren-aromatic-choice.jpg",
     "alt": "Mac Baren Aromatic Choice 手卷烟丝",
-    "details": ["assets/details/detail-16.jpg","assets/details/detail-17.jpg"],
+    "details": [
+      "assets/details/detail-16.jpg",
+      "assets/details/detail-17.jpg"
+    ],
     "featured": false
   },
   {
     "id": "golden-virginia",
-    "name": "Golden Virginia",
+    "name": "Golden Virginia（欧税版）",
     "category": "手卷烟丝",
     "price": 88,
     "stock": 8,
     "spec": "手卷烟丝 50g",
     "image": "assets/products/golden-virginia.jpg",
     "alt": "Golden Virginia 手卷烟丝",
-    "details": ["assets/details/detail-18.jpg","assets/details/detail-19.jpg","assets/details/detail-20.jpg","assets/details/detail-21.jpg"],
+    "details": [
+      "assets/details/detail-18.jpg",
+      "assets/details/detail-19.jpg",
+      "assets/details/detail-20.jpg",
+      "assets/details/detail-21.jpg"
+    ],
     "featured": false
   },
   {
     "id": "amber-leaf",
-    "name": "Amber Leaf",
+    "name": "Amber Leaf（欧税版）",
     "category": "手卷烟丝",
     "price": 95,
     "stock": 10,
     "spec": "手卷烟丝 50g",
     "image": "assets/products/amber-leaf.jpg",
     "alt": "Amber Leaf 手卷烟丝",
-    "details": ["assets/details/detail-22.jpg","assets/details/detail-23.jpg","assets/details/detail-24.jpg","assets/details/detail-25.jpg","assets/details/detail-26.jpg"],
+    "details": [
+      "assets/details/detail-22.jpg",
+      "assets/details/detail-23.jpg",
+      "assets/details/detail-24.jpg",
+      "assets/details/detail-25.jpg",
+      "assets/details/detail-26.jpg"
+    ],
     "featured": false
   },
   {
     "id": "mac-baren-original-virginia",
-    "name": "Mac Baren Original Virginia",
+    "name": "Mac Baren Original Virginia（欧税版）",
     "category": "手卷烟丝",
     "price": 75,
     "stock": 22,
     "spec": "手卷烟丝",
     "image": "assets/products/mac-baren-original-virginia.jpg",
     "alt": "Mac Baren Original Virginia 手卷烟丝",
-    "details": ["assets/details/detail-27.jpg","assets/details/detail-28.jpg","assets/details/detail-29.jpg","assets/details/detail-30.jpg"],
+    "details": [
+      "assets/details/detail-27.jpg",
+      "assets/details/detail-28.jpg",
+      "assets/details/detail-29.jpg",
+      "assets/details/detail-30.jpg"
+    ],
     "featured": false
   },
   {
     "id": "captain-black-cherry",
-    "name": "Captain Black Cherry",
+    "name": "Captain Black Cherry（欧税版）",
     "category": "烟斗烟草",
     "price": 75,
     "stock": 14,
     "spec": "烟斗烟丝 42.5g",
     "image": "assets/products/captain-black-cherry.jpg",
     "alt": "Captain Black Cherry 烟斗烟丝",
-    "details": ["assets/details/detail-31.jpg","assets/details/detail-32.jpg","assets/details/detail-33.jpg","assets/details/detail-34.jpg","assets/details/detail-35.jpg"],
+    "details": [
+      "assets/details/detail-31.jpg",
+      "assets/details/detail-32.jpg",
+      "assets/details/detail-33.jpg",
+      "assets/details/detail-34.jpg",
+      "assets/details/detail-35.jpg"
+    ],
     "featured": false
   },
   {
     "id": "captain-black-original",
-    "name": "Captain Black Original",
+    "name": "Captain Black Original（欧税版）",
     "category": "烟斗烟草",
     "price": 75,
     "stock": 10,
     "spec": "烟斗烟丝 42.5g",
     "image": "assets/products/captain-black-original.jpg",
     "alt": "Captain Black Original 烟斗烟丝",
-    "details": ["assets/details/detail-36.jpg","assets/details/detail-37.jpg","assets/details/detail-38.jpg","assets/details/detail-39.jpg"],
+    "details": [
+      "assets/details/detail-36.jpg",
+      "assets/details/detail-37.jpg",
+      "assets/details/detail-38.jpg",
+      "assets/details/detail-39.jpg"
+    ],
     "featured": true
   },
   {
     "id": "captain-black-royal-dark",
-    "name": "Captain Black Royal Dark",
+    "name": "Captain Black Royal Dark（欧税版）",
     "category": "烟斗烟草",
     "price": 75,
     "stock": 16,
     "spec": "烟斗烟丝 42.5g",
     "image": "assets/products/captain-black-royal-dark.jpg",
     "alt": "Captain Black Royal 深色展示图",
-    "details": ["assets/details/detail-43.jpg","assets/details/detail-44.jpg"],
+    "details": [
+      "assets/details/detail-43.jpg",
+      "assets/details/detail-44.jpg"
+    ],
     "featured": false
   },
   {
     "id": "captain-black-royal-pouch",
-    "name": "Captain Black Royal Pouch",
+    "name": "Captain Black Royal Pouch（欧税版）",
     "category": "烟斗烟草",
     "price": 75,
     "stock": 12,
     "spec": "烟斗烟丝 42.5g",
     "image": "assets/products/captain-black-royal-pouch.jpg",
     "alt": "Captain Black Royal 袋装烟斗烟丝",
-    "details": ["assets/details/detail-45.jpg","assets/details/detail-46.jpg","assets/details/detail-47.jpg"],
+    "details": [
+      "assets/details/detail-45.jpg",
+      "assets/details/detail-46.jpg",
+      "assets/details/detail-47.jpg"
+    ],
     "featured": false
   },
   {
     "id": "captain-black-gold",
-    "name": "Captain Black Gold",
+    "name": "Captain Black Gold（欧税版）",
     "category": "烟斗烟草",
     "price": 78,
     "stock": 9,
     "spec": "烟斗烟丝 42.5g",
     "image": "assets/products/captain-black-gold.jpg",
     "alt": "Captain Black Gold 烟斗烟丝",
-    "details": ["assets/details/detail-48.jpg","assets/details/detail-49.jpg","assets/details/detail-50.jpg","assets/details/detail-51.jpg","assets/details/detail-52.jpg"],
+    "details": [
+      "assets/details/detail-48.jpg",
+      "assets/details/detail-49.jpg",
+      "assets/details/detail-50.jpg",
+      "assets/details/detail-51.jpg",
+      "assets/details/detail-52.jpg"
+    ],
     "featured": false
   },
   {
     "id": "mac-baren-double-apple",
-    "name": "Mac Baren Double Apple Choice",
+    "name": "Mac Baren Double Apple Choice（欧税版）",
     "category": "风味系列",
     "price": 75,
     "stock": 10,
     "spec": "风味手卷烟丝",
     "image": "assets/products/mac-baren-double-apple.jpg",
     "alt": "Mac Baren Double Apple Choice 双苹果风味",
-    "details": ["assets/details/detail-53.jpg","assets/details/detail-54.jpg"],
+    "details": [
+      "assets/details/detail-53.jpg",
+      "assets/details/detail-54.jpg"
+    ],
     "featured": false
   },
   {
     "id": "mac-baren-dark-chocolate",
-    "name": "Mac Baren Dark Chocolate Choice",
+    "name": "Mac Baren Dark Chocolate Choice（欧税版）",
     "category": "风味系列",
     "price": 75,
     "stock": 10,
     "spec": "风味手卷烟丝 40g",
     "image": "assets/products/mac-baren-dark-chocolate.jpg",
     "alt": "Mac Baren Dark Chocolate Choice 黑巧克力风味",
-    "details": ["assets/details/detail-55.jpg","assets/details/detail-56.jpg"],
+    "details": [
+      "assets/details/detail-55.jpg",
+      "assets/details/detail-56.jpg"
+    ],
     "featured": false
   },
   {
     "id": "peterson-early-morning-pipe",
-    "name": "Peterson Early Morning Pipe",
+    "name": "Peterson Early Morning Pipe（欧税版）",
     "category": "烟斗烟草",
     "price": 178,
     "stock": 8,
     "spec": "烟斗烟草 50g",
     "image": "assets/products/peterson-early-morning-pipe.jpg",
     "alt": "Peterson Early Morning Pipe 烟斗烟草",
-    "details": ["assets/details/detail-41.jpg"],
+    "details": [
+      "assets/details/detail-41.jpg"
+    ],
     "featured": false
   },
   {
     "id": "peterson-classic",
-    "name": "Peterson 经典系列",
+    "name": "Peterson 经典系列（欧税版）",
     "category": "烟斗烟草",
     "price": 178,
     "stock": 5,
     "spec": "烟斗烟草系列",
     "image": "assets/products/peterson-series.jpg",
     "alt": "Peterson 经典烟斗烟草系列",
-    "details": ["assets/details/detail-40.jpg","assets/details/detail-42.jpg"],
+    "details": [
+      "assets/details/detail-40.jpg",
+      "assets/details/detail-42.jpg"
+    ],
     "featured": true
   }
 ]
