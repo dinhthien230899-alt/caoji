@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>草集 · 后台管理</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-body">
+    <!-- 登录遮罩 -->
+    <div class="login-overlay" id="loginOverlay">
+      <div class="login-box">
+        <h2>草集后台</h2>
+        <p>请输入管理密码</p>
+        <input type="password" id="passwordInput" placeholder="管理密码" />
+        <button onclick="doLogin()">进入后台</button>
+        <p style="font-size:12px;margin-top:8px;color:var(--muted);">默认密码: caoji2024</p>
+      </div>
+    </div>
+
+    <!-- 顶部 -->
+    <header class="admin-header">
+      <h1>草集 · 后台管理</h1>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="addProduct()">+ 新增商品</button>
+        <button class="btn-import" onclick="importJSON()">📥 导入 JSON</button>
+        <button class="btn-export" onclick="exportJSON()">📤 导出 JSON</button>
+        <button class="btn-danger" onclick="changePassword()">修改密码</button>
+      </div>
+    </header>
+
+    <!-- 统计 -->
+    <div class="admin-stats">
+      <div class="stat-card"><strong id="statTotal">0</strong><span>商品总数</span></div>
+      <div class="stat-card"><strong id="statInStock">0</strong><span>有库存</span></div>
+      <div class="stat-card danger"><strong id="statOut">0</strong><span>无库存</span></div>
+      <div class="stat-card warning"><strong id="statLow">0</strong><span>低库存 (≤5)</span></div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="admin-filter">
+      <select id="filterCategory" onchange="renderTable()">
+        <option value="全部">全部</option>
+        <option value="手卷烟丝">手卷烟丝</option>
+        <option value="烟斗烟草">烟斗烟草</option>
+        <option value="风味系列">风味系列</option>
+        <option value="配件滤嘴">配件滤嘴</option>
+        <option value="烟纸配件">烟纸配件</option>
+      </select>
+      <input type="text" id="searchName" placeholder="搜索商品名称..." oninput="renderTable()" />
+    </div>
+
+    <!-- 商品列表 -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>图片</th>
+            <th>名称</th>
+            <th>分类</th>
+            <th>价格</th>
+            <th>库存</th>
+            <th>规格</th>
+            <th>推荐</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- 编辑弹窗 -->
+    <div class="modal-overlay" id="editModal" style="display:none;">
+      <div class="modal-panel">
+        <h3 id="modalTitle">编辑商品</h3>
+        <label><span>商品名称</span><input type="text" id="editName" /></label>
+        <label><span>分类</span>
+          <select id="editCategory">
+            <option value="手卷烟丝">手卷烟丝</option>
+            <option value="烟斗烟草">烟斗烟草</option>
+            <option value="风味系列">风味系列</option>
+            <option value="配件滤嘴">配件滤嘴</option>
+            <option value="烟纸配件">烟纸配件</option>
+          </select>
+        </label>
+        <label><span>价格 (元)</span><input type="number" id="editPrice" min="0" /></label>
+        <label><span>库存数量 (0=无库存)</span><input type="number" id="editStock" min="0" /></label>
+        <label><span>规格描述</span><input type="text" id="editSpec" placeholder="如：手卷烟丝 50g" /></label>
+        <label><span>主图路径</span><input type="text" id="editImage" placeholder="assets/products/xxx.jpg" /></label>
+        <label><span>图片替代文本</span><input type="text" id="editAlt" /></label>
+        <label><span>详情大图</span></label>
+        <div id="detailList" style="margin-bottom:8px;"></div>
+        <button class="btn-primary" style="font-size:12px;min-height:30px;" onclick="addDetailField()">+ 添加详情图</button>
+        <label style="margin-top:10px;">
+          <input type="checkbox" id="editFeatured" /> 新客推荐 (首页展示)
+        </label>
+        <div class="modal-actions">
+          <button class="btn-primary" onclick="saveEdit()">保存</button>
+          <button style="background:#9c9c9c;color:#fff;" onclick="closeModal()">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(event)" />
+
+    <script>
+      // ========== 登录 ==========
+      var DEFAULT_PASSWORD = "caoji2024";
+      var PWD_KEY = "caoji_admin_pwd";
+
+      function doLogin() {
+        var input = document.getElementById("passwordInput").value.trim();
+        var saved = localStorage.getItem(PWD_KEY) || DEFAULT_PASSWORD;
+        if (input !== saved) {
+          alert("密码错误！");
+          return;
+        }
+        document.getElementById("loginOverlay").style.display = "none";
+      }
+
+      function changePassword() {
+        var oldPwd = prompt("请输入当前密码：");
+        var saved = localStorage.getItem(PWD_KEY) || DEFAULT_PASSWORD;
+        if (oldPwd !== saved) { alert("密码错误！"); return; }
+        var newPwd = prompt("请输入新密码：");
+        if (!newPwd) return;
+        localStorage.setItem(PWD_KEY, newPwd);
+        alert("密码已修改！下次登录生效。");
+      }
+
+      // ========== 数据 ==========
+      var products = [];
+      var editingId = null;
+
+      function loadData() {
+        // 优先 fetch
+        fetch("products.json")
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            products = data;
+            renderTable();
+            updateStats();
+          })
+          .catch(function () {
+            // 降级：从 localStorage 恢复
+            var saved = localStorage.getItem("caoji_admin_draft");
+            if (saved) {
+              products = JSON.parse(saved);
+              renderTable();
+              updateStats();
+              alert("已从本地草稿恢复数据。\n提示：需要通过 HTTP 服务打开本页面才能直接加载 products.json（如 npx serve .）");
+            } else {
+              alert("无法加载商品数据。请通过 HTTP 服务打开本页面，或使用「导入 JSON」按钮。");
+            }
+          });
+      }
+
+      function saveLocal() {
+        localStorage.setItem("caoji_admin_draft", JSON.stringify(products));
+      }
+
+      // ========== 统计 ==========
+      function updateStats() {
+        var total = products.length;
+        var inStock = products.filter(function (p) { return p.stock > 0; }).length;
+        var out = products.filter(function (p) { return p.stock === 0; }).length;
+        var low = products.filter(function (p) { return p.stock > 0 && p.stock <= 5; }).length;
+
+        document.getElementById("statTotal").textContent = total;
+        document.getElementById("statInStock").textContent = inStock;
+        document.getElementById("statOut").textContent = out;
+        document.getElementById("statLow").textContent = low;
+      }
+
+      // ========== 表格渲染 ==========
+      function renderTable() {
+        var filter = document.getElementById("filterCategory").value;
+        var search = document.getElementById("searchName").value.toLowerCase();
+        var tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        var filtered = products.filter(function (p) {
+          if (filter !== "全部" && p.category !== filter) return false;
+          if (search && p.name.toLowerCase().indexOf(search) === -1) return false;
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);">暂无商品</td></tr>';
+          return;
+        }
+
+        filtered.forEach(function (p) {
+          var rowClass = "";
+          if (p.stock === 0) rowClass = " row-out";
+          else if (p.stock <= 5) rowClass = " row-low";
+
+          var tr = document.createElement("tr");
+          tr.className = rowClass;
+          tr.innerHTML =
+            '<td><img src="' + p.image + '" alt="" onerror="this.style.display=\'none\'" /></td>' +
+            "<td><strong>" + p.name + "</strong></td>" +
+            "<td>" + p.category + "</td>" +
+            "<td>" + p.price + " 元</td>" +
+            "<td>" + (p.stock === 0 ? '<span style="color:var(--red);font-weight:900;">0 (无库存)</span>' : p.stock) + "</td>" +
+            "<td>" + p.spec + "</td>" +
+            "<td>" + (p.featured ? "⭐" : "-") + "</td>" +
+            '<td>' +
+            '<button class="btn-primary" onclick="editProduct(\'' + p.id + '\')">编辑</button>' +
+            '<button class="btn-danger" onclick="deleteProduct(\'' + p.id + '\')">删除</button>' +
+            "</td>";
+          tbody.appendChild(tr);
+        });
+      }
+
+      // ========== CRUD ==========
+      function addProduct() {
+        var newId = "product-" + Date.now();
+        var newProduct = {
+          id: newId,
+          name: "",
+          category: "手卷烟丝",
+          price: 0,
+          stock: 0,
+          spec: "",
+          image: "",
+          alt: "",
+          details: [],
+          featured: false,
+        };
+        products.push(newProduct);
+        editingId = newId;
+        fillForm(newProduct);
+        document.getElementById("modalTitle").textContent = "新增商品";
+        document.getElementById("editModal").style.display = "flex";
+        saveLocal();
+        renderTable();
+        updateStats();
+      }
+
+      function editProduct(id) {
+        var p = products.find(function (item) { return item.id === id; });
+        if (!p) return;
+        editingId = id;
+        fillForm(p);
+        document.getElementById("modalTitle").textContent = "编辑商品";
+        document.getElementById("editModal").style.display = "flex";
+      }
+
+      function deleteProduct(id) {
+        if (!confirm("确定删除该商品？此操作不可撤销。")) return;
+        products = products.filter(function (p) { return p.id !== id; });
+        saveLocal();
+        renderTable();
+        updateStats();
+      }
+
+      function saveEdit() {
+        var formData = {
+          name: document.getElementById("editName").value.trim(),
+          category: document.getElementById("editCategory").value,
+          price: parseInt(document.getElementById("editPrice").value) || 0,
+          stock: parseInt(document.getElementById("editStock").value) || 0,
+          spec: document.getElementById("editSpec").value.trim(),
+          image: document.getElementById("editImage").value.trim(),
+          alt: document.getElementById("editAlt").value.trim(),
+          details: collectDetails(),
+          featured: document.getElementById("editFeatured").checked,
+        };
+
+        if (!formData.name) { alert("请输入商品名称！"); return; }
+
+        var idx = products.findIndex(function (p) { return p.id === editingId; });
+        if (idx === -1) return;
+
+        products[idx] = Object.assign({}, products[idx], formData);
+        saveLocal();
+        closeModal();
+        renderTable();
+        updateStats();
+      }
+
+      function fillForm(p) {
+        document.getElementById("editName").value = p.name || "";
+        document.getElementById("editCategory").value = p.category || "手卷烟丝";
+        document.getElementById("editPrice").value = p.price || 0;
+        document.getElementById("editStock").value = p.stock || 0;
+        document.getElementById("editSpec").value = p.spec || "";
+        document.getElementById("editImage").value = p.image || "";
+        document.getElementById("editAlt").value = p.alt || "";
+        document.getElementById("editFeatured").checked = !!p.featured;
+        renderDetailFields(p.details || []);
+      }
+
+      function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+        editingId = null;
+      }
+
+      // ========== 详情图 ==========
+      function renderDetailFields(details) {
+        var container = document.getElementById("detailList");
+        container.innerHTML = "";
+        (details || []).forEach(function (d, i) {
+          container.appendChild(createDetailRow(d, i));
+        });
+      }
+
+      function createDetailRow(value, index) {
+        var div = document.createElement("div");
+        div.className = "detail-list-item";
+        div.innerHTML =
+          '<input type="text" value="' + (value || "") + '" placeholder="assets/details/detail-xx.jpg" data-detail-index="' + index + '" />' +
+          '<button onclick="removeDetailField(this)">×</button>';
+        return div;
+      }
+
+      function addDetailField() {
+        var container = document.getElementById("detailList");
+        var idx = container.children.length;
+        container.appendChild(createDetailRow("", idx));
+      }
+
+      function removeDetailField(btn) {
+        btn.parentElement.remove();
+      }
+
+      function collectDetails() {
+        var inputs = document.querySelectorAll("#detailList input");
+        var result = [];
+        inputs.forEach(function (inp) {
+          var v = inp.value.trim();
+          if (v) result.push(v);
+        });
+        return result;
+      }
+
+      // ========== 导入导出 ==========
+      function importJSON() {
+        document.getElementById("importFile").click();
+      }
+
+      function handleImport(event) {
+        var file = event.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            var data = JSON.parse(e.target.result);
+            if (!Array.isArray(data)) throw new Error("格式错误");
+            products = data;
+            saveLocal();
+            renderTable();
+            updateStats();
+            alert("已导入 " + data.length + " 个商品！");
+          } catch (err) {
+            alert("导入失败：JSON 格式不正确。");
+          }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+      }
+
+      function exportJSON() {
+        var blob = new Blob([JSON.stringify(products, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "products.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        alert("products.json 已下载！\n请将其放入项目文件夹，替换旧文件后重新部署。");
+      }
+
+      // ========== 键盘快捷键 ==========
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+      });
+
+      // ========== 启动 ==========
+      loadData();
+    </script>
+  </body>
+</html>
