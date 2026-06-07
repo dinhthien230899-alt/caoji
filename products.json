@@ -343,7 +343,7 @@
     "name": "Peterson Early Morning Pipe（欧税版）",
     "category": "烟斗烟草",
     "price": 178,
-    "stock": 8,
+    "stock": 0,
     "spec": "烟斗烟草 50g",
     "image": "assets/products/peterson-early-morning-pipe.jpg",
     "alt": "Peterson Early Morning Pipe 烟斗烟草",
@@ -357,7 +357,7 @@
     "name": "Peterson 经典系列（欧税版）",
     "category": "烟斗烟草",
     "price": 178,
-    "stock": 5,
+    "stock": 0,
     "spec": "烟斗烟草系列",
     "image": "assets/products/peterson-series.jpg",
     "alt": "Peterson 经典烟斗烟草系列",
@@ -366,5 +366,17 @@
       "assets/details/detail-42.jpg"
     ],
     "featured": true
+  },
+  {
+    "id": "product-1780810391697",
+    "name": "",
+    "category": "手卷烟丝",
+    "price": 0,
+    "stock": 0,
+    "spec": "",
+    "image": "",
+    "alt": "",
+    "details": [],
+    "featured": false
   }
 ]
