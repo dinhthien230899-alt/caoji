@@ -28,6 +28,7 @@
         <button class="btn-primary" onclick="deployToGithub()" id="deployBtn" style="background:var(--red);">🚀 部署上线</button>
         <button class="btn-danger" onclick="changePassword()">修改密码</button>
         <button style="background:#555;color:#fff;min-height:36px;padding:0 14px;border:0;border-radius:6px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;" onclick="setToken()">🔑 设置Token</button>
+        <button style="background:#e67e22;color:#fff;min-height:36px;padding:0 14px;border:0;border-radius:6px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;" onclick="allOutOfStock()">⚠ 全部无库存</button>
       </div>
     </header>
 
@@ -307,6 +308,9 @@
             '<td>' +
             '<button class="btn-primary" onclick="editProduct(\'' + p.id + '\')">编辑</button>' +
             '<button class="btn-danger" onclick="deleteProduct(\'' + p.id + '\')">删除</button>' +
+            (p.stock > 0
+              ? '<button style="background:#e67e22;color:#fff;min-height:28px;padding:0 10px;border:0;border-radius:4px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin:1px;" onclick="toggleStock(\'' + p.id + '\')">设为无库存</button>'
+              : '<button style="background:var(--green);color:#fff;min-height:28px;padding:0 10px;border:0;border-radius:4px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;margin:1px;" onclick="restock(\'' + p.id + '\')">补货</button>') +
             "</td>";
           tbody.appendChild(tr);
         });
@@ -349,6 +353,36 @@
       function deleteProduct(id) {
         if (!confirm("确定删除该商品？此操作不可撤销。")) return;
         products = products.filter(function (p) { return p.id !== id; });
+        saveLocal();
+        renderTable();
+        updateStats();
+      }
+
+      function toggleStock(id) {
+        var p = products.find(function(item) { return item.id === id; });
+        if (!p) return;
+        p.stock = 0;
+        saveLocal();
+        renderTable();
+        updateStats();
+      }
+
+      function restock(id) {
+        var p = products.find(function(item) { return item.id === id; });
+        if (!p) return;
+        var qty = prompt("请输入补货数量：", "10");
+        if (qty === null) return;
+        var num = parseInt(qty);
+        if (isNaN(num) || num < 0) { alert("请输入有效数量！"); return; }
+        p.stock = num;
+        saveLocal();
+        renderTable();
+        updateStats();
+      }
+
+      function allOutOfStock() {
+        if (!confirm("确定将所有商品设为无库存吗？")) return;
+        products.forEach(function(p) { p.stock = 0; });
         saveLocal();
         renderTable();
         updateStats();
