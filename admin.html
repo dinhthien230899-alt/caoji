@@ -23,9 +23,11 @@
       <h1>草集 · 后台管理</h1>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn-primary" onclick="addProduct()">+ 新增商品</button>
-        <button class="btn-import" onclick="importJSON()">📥 导入 JSON</button>
-        <button class="btn-export" onclick="exportJSON()">📤 导出 JSON</button>
+        <button class="btn-import" onclick="importJSON()">📥 导入</button>
+        <button class="btn-export" onclick="exportJSON()">📤 导出</button>
+        <button class="btn-primary" onclick="deployToGithub()" id="deployBtn" style="background:var(--red);">🚀 部署上线</button>
         <button class="btn-danger" onclick="changePassword()">修改密码</button>
+        <button style="background:#555;color:#fff;min-height:36px;padding:0 14px;border:0;border-radius:6px;font:inherit;font-weight:800;font-size:14px;cursor:pointer;" onclick="setToken()">🔑 设置Token</button>
       </div>
     </header>
 
@@ -116,6 +118,103 @@
           return;
         }
         document.getElementById("loginOverlay").style.display = "none";
+        checkToken();
+      }
+
+      // ========== GitHub Token 配置 ==========
+      var TOKEN_KEY = "caoji_github_token";
+      var REPO_OWNER = "dinhthien230899-alt";
+      var REPO_NAME = "caoji";
+
+      function getToken() {
+        return localStorage.getItem(TOKEN_KEY);
+      }
+
+      function checkToken() {
+        if (!getToken()) {
+          setTimeout(function() {
+            var t = prompt("请输入 GitHub Token（只需配置一次）：\n\n获取方式：https://github.com/settings/tokens\n需要勾选 repo 权限");
+            if (t && t.trim()) {
+              localStorage.setItem(TOKEN_KEY, t.trim());
+              alert("Token 已保存！现在可以使用「部署上线」功能了。");
+            }
+          }, 500);
+        }
+      }
+
+      function setToken() {
+        var t = prompt("请输入新的 GitHub Token：");
+        if (t && t.trim()) {
+          localStorage.setItem(TOKEN_KEY, t.trim());
+          alert("Token 已更新！");
+        }
+      }
+
+      // ========== 部署上线 ==========
+      function deployToGithub() {
+        var token = getToken();
+        if (!token) {
+          alert("请先配置 GitHub Token！");
+          setToken();
+          return;
+        }
+
+        var btn = document.getElementById("deployBtn");
+        btn.textContent = "⏳ 部署中...";
+        btn.disabled = true;
+
+        // 步骤1：获取当前文件的 SHA
+        var apiBase = "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/contents/products.json";
+
+        fetch(apiBase, {
+          headers: { "Authorization": "Bearer " + token }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.sha) throw new Error("获取文件信息失败: " + (data.message || "未知错误"));
+
+          // 步骤2：上传新内容
+          var newContent = JSON.stringify(products, null, 2);
+          var body = {
+            message: "后台更新商品数据",
+            content: btoa(unescape(encodeURIComponent(newContent))),
+            sha: data.sha,
+            branch: "main"
+          };
+
+          return fetch(apiBase, {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+          });
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(result) {
+          if (result.content) {
+            btn.textContent = "✅ 已上线！";
+            btn.style.background = "var(--green)";
+            alert("部署成功！\n\n1-2 分钟后刷新网站即可看到更新。\n\n网站地址：https://" + REPO_OWNER + ".github.io/" + REPO_NAME + "/");
+            setTimeout(function() {
+              btn.textContent = "🚀 部署上线";
+              btn.style.background = "var(--red)";
+              btn.disabled = false;
+            }, 3000);
+          } else {
+            throw new Error(result.message || "部署失败");
+          }
+        })
+        .catch(function(err) {
+          btn.textContent = "❌ 部署失败";
+          btn.disabled = false;
+          alert("部署失败：" + err.message + "\n\n请检查：\n1. Token 是否正确\n2. Token 是否有 repo 权限\n3. 网络是否正常");
+          setTimeout(function() {
+            btn.textContent = "🚀 部署上线";
+            btn.style.background = "var(--red)";
+          }, 3000);
+        });
       }
 
       function changePassword() {
@@ -278,6 +377,15 @@
         closeModal();
         renderTable();
         updateStats();
+
+        // 提示部署
+        if (getToken()) {
+          setTimeout(function() {
+            if (confirm("商品已保存！是否立即部署上线？")) {
+              deployToGithub();
+            }
+          }, 300);
+        }
       }
 
       function fillForm(p) {
