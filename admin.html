@@ -89,17 +89,9 @@
         <label><span>价格 (元)</span><input type="number" id="editPrice" min="0" /></label>
         <label><span>库存数量 (0=无库存)</span><input type="number" id="editStock" min="0" /></label>
         <label><span>规格描述</span><input type="text" id="editSpec" placeholder="如：手卷烟丝 50g" /></label>
-        <label><span>主图</span>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="editImage" placeholder="选择图片或输入路径" style="flex:1;" />
-            <button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="pickImage('editImage','mainPreview')">📷 选择</button>
-          </div>
-          <img id="mainPreview" style="max-width:200px;max-height:150px;margin-top:6px;display:none;border-radius:6px;border:1px solid var(--border-color, #ddd);" />
-        </label>
-        <label><span>图片替代文本</span><input type="text" id="editAlt" /></label>
-        <label><span>详情大图</span></label>
-        <div id="detailList" style="margin-bottom:8px;"></div>
-        <button class="btn-primary" style="font-size:12px;min-height:30px;" onclick="addDetailField()">+ 添加详情图</button>
+        <label><span>商品图片（最多8张，第一张为主图）</span></label>
+        <div id="imageList" style="margin-bottom:8px;"></div>
+        <label><span>图片替代文本</span><input type="text" id="editAlt" placeholder="图片无法显示时的文字描述" /></label>
         <label style="margin-top:10px;">
           <input type="checkbox" id="editFeatured" /> 新客推荐 (首页展示)
         </label>
@@ -400,15 +392,16 @@
       }
 
       function saveEdit() {
+        var images = collectImages();
         var formData = {
           name: document.getElementById("editName").value.trim(),
           category: document.getElementById("editCategory").value,
           price: parseInt(document.getElementById("editPrice").value) || 0,
           stock: parseInt(document.getElementById("editStock").value) || 0,
           spec: document.getElementById("editSpec").value.trim(),
-          image: document.getElementById("editImage").value.trim(),
+          image: images[0] || "",
           alt: document.getElementById("editAlt").value.trim(),
-          details: collectDetails(),
+          details: images.slice(1),
           featured: document.getElementById("editFeatured").checked,
         };
 
@@ -439,25 +432,14 @@
         document.getElementById("editPrice").value = p.price || 0;
         document.getElementById("editStock").value = p.stock || 0;
         document.getElementById("editSpec").value = p.spec || "";
-        document.getElementById("editImage").value = p.image || "";
         document.getElementById("editAlt").value = p.alt || "";
         document.getElementById("editFeatured").checked = !!p.featured;
 
-        // 主图预览
-        var mainPreview = document.getElementById("mainPreview");
-        if (p.image && p.image.indexOf("data:image/") === 0) {
-          mainPreview.src = p.image;
-          mainPreview.style.display = "block";
-        } else if (p.image) {
-          // 普通路径也尝试加载
-          mainPreview.src = p.image;
-          mainPreview.style.display = "block";
-          mainPreview.onerror = function() { mainPreview.style.display = "none"; };
-        } else {
-          mainPreview.style.display = "none";
-        }
-
-        renderDetailFields(p.details || []);
+        // 组装图片列表：image + details
+        var images = [];
+        if (p.image) images.push(p.image);
+        if (p.details) images = images.concat(p.details);
+        renderImageSlots(images);
       }
 
       function closeModal() {
@@ -465,19 +447,21 @@
         editingId = null;
       }
 
-      // ========== 详情图 ==========
-      function renderDetailFields(details) {
-        var container = document.getElementById("detailList");
+      // ========== 图片插槽（最多8张） ==========
+      var MAX_IMAGES = 8;
+
+      function renderImageSlots(images) {
+        var container = document.getElementById("imageList");
         container.innerHTML = "";
-        (details || []).forEach(function (d, i) {
-          container.appendChild(createDetailRow(d, i));
-        });
+        for (var i = 0; i < MAX_IMAGES; i++) {
+          container.appendChild(createImageSlot(i, images[i] || ""));
+        }
       }
 
-      function createDetailRow(value, index) {
-        var uniqueId = "detail_" + Date.now() + "_" + index;
-        var inputId = uniqueId + "_input";
-        var previewId = uniqueId + "_preview";
+      function createImageSlot(index, value) {
+        var slotId = "imgSlot_" + index;
+        var inputId = slotId + "_input";
+        var previewId = slotId + "_preview";
 
         var div = document.createElement("div");
         div.className = "detail-list-item";
@@ -486,13 +470,16 @@
         var row = document.createElement("div");
         row.style.cssText = "display:flex;gap:6px;align-items:center;";
 
+        var label = document.createElement("span");
+        label.style.cssText = "font-size:12px;font-weight:700;min-width:55px;color:var(--muted);";
+        label.textContent = (index === 0 ? "主图" : "图" + (index + 1));
+
         var input = document.createElement("input");
         input.type = "text";
         input.id = inputId;
         input.value = value || "";
-        input.placeholder = "选择图片或输入路径";
+        input.placeholder = index === 0 ? "必选，点击📷选择" : "可选，点击📷选择";
         input.style.cssText = "flex:1;";
-        input.setAttribute("data-preview-id", previewId);
 
         var pickBtn = document.createElement("button");
         pickBtn.type = "button";
@@ -501,21 +488,14 @@
         pickBtn.textContent = "📷";
         pickBtn.onclick = function() { pickImage(inputId, previewId); };
 
-        var delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.style.cssText = "background:var(--red);color:#fff;min-height:30px;padding:0 8px;border:0;border-radius:4px;font-size:12px;cursor:pointer;";
-        delBtn.textContent = "×";
-        delBtn.onclick = function() { div.remove(); };
-
+        row.appendChild(label);
         row.appendChild(input);
         row.appendChild(pickBtn);
-        row.appendChild(delBtn);
 
         var preview = document.createElement("img");
         preview.id = previewId;
-        preview.style.cssText = "max-width:150px;max-height:100px;margin-top:4px;display:none;border-radius:4px;border:1px solid var(--border-color, #ddd);";
+        preview.style.cssText = "max-width:120px;max-height:80px;margin:4px 0 0 61px;display:none;border-radius:4px;border:1px solid var(--border-color, #ddd);";
 
-        // 如果已有值且是 data URL，显示预览
         if (value && value.indexOf("data:image/") === 0) {
           preview.src = value;
           preview.style.display = "block";
@@ -526,23 +506,15 @@
         return div;
       }
 
-      function addDetailField() {
-        var container = document.getElementById("detailList");
-        var idx = container.children.length;
-        container.appendChild(createDetailRow("", idx));
-      }
-
-      function removeDetailField(btn) {
-        btn.parentElement.remove();
-      }
-
-      function collectDetails() {
-        var inputs = document.querySelectorAll("#detailList input");
+      function collectImages() {
         var result = [];
-        inputs.forEach(function (inp) {
-          var v = inp.value.trim();
-          if (v) result.push(v);
-        });
+        for (var i = 0; i < MAX_IMAGES; i++) {
+          var input = document.getElementById("imgSlot_" + i + "_input");
+          if (input) {
+            var v = input.value.trim();
+            if (v) result.push(v);
+          }
+        }
         return result;
       }
 
