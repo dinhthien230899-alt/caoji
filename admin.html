@@ -89,7 +89,7 @@
         <label><span>价格 (元)</span><input type="number" id="editPrice" min="0" /></label>
         <label><span>库存数量 (0=无库存)</span><input type="number" id="editStock" min="0" /></label>
         <label><span>规格描述</span><input type="text" id="editSpec" placeholder="如：手卷烟丝 50g" /></label>
-        <label><span>主图路径</span><input type="text" id="editImage" placeholder="assets/products/xxx.jpg" /></label>
+        <label><span>主图路径</span><div style="display:flex;gap:6px;"><input type="text" id="editImage" placeholder="assets/products/xxx.jpg" style="flex:1;" /><button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="triggerUpload('editImage','assets/products/')">📷 上传</button></div></label>
         <label><span>图片替代文本</span><input type="text" id="editAlt" /></label>
         <label><span>详情大图</span></label>
         <div id="detailList" style="margin-bottom:8px;"></div>
@@ -451,9 +451,12 @@
       function createDetailRow(value, index) {
         var div = document.createElement("div");
         div.className = "detail-list-item";
+        div.style.cssText = "display:flex;gap:6px;";
+        var inputId = "detailInput_" + index + "_" + Date.now();
         div.innerHTML =
-          '<input type="text" value="' + (value || "") + '" placeholder="assets/details/detail-xx.jpg" data-detail-index="' + index + '" />' +
-          '<button onclick="removeDetailField(this)">×</button>';
+          '<input type="text" id="' + inputId + '" value="' + (value || "") + '" placeholder="assets/details/detail-xx.jpg" style="flex:1;" />' +
+          '<button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="triggerUpload(\'' + inputId + '\',\'assets/details/\')">📷</button>' +
+          '<button type="button" style="background:var(--red);color:#fff;min-height:30px;padding:0 8px;border:0;border-radius:4px;font-size:12px;cursor:pointer;" onclick="removeDetailField(this)">×</button>';
         return div;
       }
 
@@ -512,6 +515,76 @@
         a.click();
         URL.revokeObjectURL(url);
         alert("products.json 已下载！\n请将其放入项目文件夹，替换旧文件后重新部署。");
+      }
+
+      // ========== 图片上传到 GitHub ==========
+      function triggerUpload(inputId, directory) {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = function(e) { handleFileUpload(e, inputId, directory); };
+        input.click();
+      }
+
+      function handleFileUpload(event, inputId, directory) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        var token = getToken();
+        if (!token) {
+          alert("请先配置 GitHub Token！");
+          setToken();
+          return;
+        }
+
+        var targetInput = document.getElementById(inputId);
+        if (targetInput) {
+          targetInput.value = "⏳ 上传中...";
+          targetInput.style.color = "var(--muted)";
+        }
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var base64 = e.target.result.split(",")[1]; // 去掉 data:image/...;base64, 前缀
+          var ext = file.name.split(".").pop().toLowerCase() || "jpg";
+          var filename = "img-" + Date.now() + "." + ext;
+          var path = directory + filename;
+
+          var apiUrl = "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/contents/" + path;
+
+          fetch(apiUrl, {
+            method: "PUT",
+            headers: {
+              "Authorization": "Bearer " + token,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              message: "上传图片 " + filename,
+              content: base64,
+              branch: "main"
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(result) {
+            if (result.content) {
+              if (targetInput) {
+                targetInput.value = path;
+                targetInput.style.color = "";
+              }
+              alert("图片上传成功！\n\n路径：" + path + "\n\n1-2 分钟后生效。");
+            } else {
+              throw new Error(result.message || "上传失败");
+            }
+          })
+          .catch(function(err) {
+            if (targetInput) {
+              targetInput.value = "";
+              targetInput.style.color = "";
+            }
+            alert("图片上传失败：" + err.message + "\n\n请检查：\n1. Token 是否有 repo 权限\n2. 网络是否正常\n3. 图片大小是否过大（建议 < 1MB）");
+          });
+        };
+        reader.readAsDataURL(file);
       }
 
       // ========== 键盘快捷键 ==========
