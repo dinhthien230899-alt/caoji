@@ -89,7 +89,13 @@
         <label><span>价格 (元)</span><input type="number" id="editPrice" min="0" /></label>
         <label><span>库存数量 (0=无库存)</span><input type="number" id="editStock" min="0" /></label>
         <label><span>规格描述</span><input type="text" id="editSpec" placeholder="如：手卷烟丝 50g" /></label>
-        <label><span>主图路径</span><div style="display:flex;gap:6px;"><input type="text" id="editImage" placeholder="assets/products/xxx.jpg" style="flex:1;" /><button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="triggerUpload('editImage','assets/products/')">📷 上传</button></div></label>
+        <label><span>主图</span>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="editImage" placeholder="选择图片或输入路径" style="flex:1;" />
+            <button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="pickImage('editImage','mainPreview')">📷 选择</button>
+          </div>
+          <img id="mainPreview" style="max-width:200px;max-height:150px;margin-top:6px;display:none;border-radius:6px;border:1px solid var(--border-color, #ddd);" />
+        </label>
         <label><span>图片替代文本</span><input type="text" id="editAlt" /></label>
         <label><span>详情大图</span></label>
         <div id="detailList" style="margin-bottom:8px;"></div>
@@ -256,7 +262,12 @@
       }
 
       function saveLocal() {
-        localStorage.setItem("caoji_admin_draft", JSON.stringify(products));
+        try {
+          localStorage.setItem("caoji_admin_draft", JSON.stringify(products));
+        } catch (e) {
+          // localStorage 满了（base64 图片太多），不报错，导出 JSON 仍可用
+          console.warn("本地草稿保存失败（可能图片太多），请及时导出 JSON 备份。");
+        }
       }
 
       // ========== 统计 ==========
@@ -431,6 +442,21 @@
         document.getElementById("editImage").value = p.image || "";
         document.getElementById("editAlt").value = p.alt || "";
         document.getElementById("editFeatured").checked = !!p.featured;
+
+        // 主图预览
+        var mainPreview = document.getElementById("mainPreview");
+        if (p.image && p.image.indexOf("data:image/") === 0) {
+          mainPreview.src = p.image;
+          mainPreview.style.display = "block";
+        } else if (p.image) {
+          // 普通路径也尝试加载
+          mainPreview.src = p.image;
+          mainPreview.style.display = "block";
+          mainPreview.onerror = function() { mainPreview.style.display = "none"; };
+        } else {
+          mainPreview.style.display = "none";
+        }
+
         renderDetailFields(p.details || []);
       }
 
@@ -449,14 +475,54 @@
       }
 
       function createDetailRow(value, index) {
+        var uniqueId = "detail_" + Date.now() + "_" + index;
+        var inputId = uniqueId + "_input";
+        var previewId = uniqueId + "_preview";
+
         var div = document.createElement("div");
         div.className = "detail-list-item";
-        div.style.cssText = "display:flex;gap:6px;";
-        var inputId = "detailInput_" + index + "_" + Date.now();
-        div.innerHTML =
-          '<input type="text" id="' + inputId + '" value="' + (value || "") + '" placeholder="assets/details/detail-xx.jpg" style="flex:1;" />' +
-          '<button type="button" class="btn-primary" style="font-size:12px;min-height:30px;white-space:nowrap;" onclick="triggerUpload(\'' + inputId + '\',\'assets/details/\')">📷</button>' +
-          '<button type="button" style="background:var(--red);color:#fff;min-height:30px;padding:0 8px;border:0;border-radius:4px;font-size:12px;cursor:pointer;" onclick="removeDetailField(this)">×</button>';
+        div.style.cssText = "margin-bottom:6px;";
+
+        var row = document.createElement("div");
+        row.style.cssText = "display:flex;gap:6px;align-items:center;";
+
+        var input = document.createElement("input");
+        input.type = "text";
+        input.id = inputId;
+        input.value = value || "";
+        input.placeholder = "选择图片或输入路径";
+        input.style.cssText = "flex:1;";
+        input.setAttribute("data-preview-id", previewId);
+
+        var pickBtn = document.createElement("button");
+        pickBtn.type = "button";
+        pickBtn.className = "btn-primary";
+        pickBtn.style.cssText = "font-size:12px;min-height:30px;white-space:nowrap;";
+        pickBtn.textContent = "📷";
+        pickBtn.onclick = function() { pickImage(inputId, previewId); };
+
+        var delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.style.cssText = "background:var(--red);color:#fff;min-height:30px;padding:0 8px;border:0;border-radius:4px;font-size:12px;cursor:pointer;";
+        delBtn.textContent = "×";
+        delBtn.onclick = function() { div.remove(); };
+
+        row.appendChild(input);
+        row.appendChild(pickBtn);
+        row.appendChild(delBtn);
+
+        var preview = document.createElement("img");
+        preview.id = previewId;
+        preview.style.cssText = "max-width:150px;max-height:100px;margin-top:4px;display:none;border-radius:4px;border:1px solid var(--border-color, #ddd);";
+
+        // 如果已有值且是 data URL，显示预览
+        if (value && value.indexOf("data:image/") === 0) {
+          preview.src = value;
+          preview.style.display = "block";
+        }
+
+        div.appendChild(row);
+        div.appendChild(preview);
         return div;
       }
 
@@ -517,72 +583,56 @@
         alert("products.json 已下载！\n请将其放入项目文件夹，替换旧文件后重新部署。");
       }
 
-      // ========== 图片上传到 GitHub ==========
-      function triggerUpload(inputId, directory) {
-        var input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-        input.onchange = function(e) { handleFileUpload(e, inputId, directory); };
-        input.click();
+      // ========== 本地图片处理（Canvas 压缩 → Base64） ==========
+      function pickImage(inputId, previewId) {
+        var fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.onchange = function(e) { handleImagePick(e, inputId, previewId); };
+        fileInput.click();
       }
 
-      function handleFileUpload(event, inputId, directory) {
+      function handleImagePick(event, inputId, previewId) {
         var file = event.target.files[0];
         if (!file) return;
 
-        var token = getToken();
-        if (!token) {
-          alert("请先配置 GitHub Token！");
-          setToken();
-          return;
-        }
-
         var targetInput = document.getElementById(inputId);
         if (targetInput) {
-          targetInput.value = "⏳ 上传中...";
+          targetInput.value = "⏳ 处理中...";
           targetInput.style.color = "var(--muted)";
         }
 
+        // Canvas 压缩图片后转 base64
         var reader = new FileReader();
         reader.onload = function(e) {
-          var base64 = e.target.result.split(",")[1]; // 去掉 data:image/...;base64, 前缀
-          var ext = file.name.split(".").pop().toLowerCase() || "jpg";
-          var filename = "img-" + Date.now() + "." + ext;
-          var path = directory + filename;
-
-          var apiUrl = "https://api.github.com/repos/" + REPO_OWNER + "/" + REPO_NAME + "/contents/" + path;
-
-          fetch(apiUrl, {
-            method: "PUT",
-            headers: {
-              "Authorization": "Bearer " + token,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              message: "上传图片 " + filename,
-              content: base64,
-              branch: "main"
-            })
-          })
-          .then(function(r) { return r.json(); })
-          .then(function(result) {
-            if (result.content) {
-              if (targetInput) {
-                targetInput.value = path;
-                targetInput.style.color = "";
-              }
-              alert("图片上传成功！\n\n路径：" + path + "\n\n1-2 分钟后生效。");
-            } else {
-              throw new Error(result.message || "上传失败");
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            var w = img.width;
+            var h = img.height;
+            var maxW = 800; // 最大宽度
+            if (w > maxW) {
+              h = Math.round(h * (maxW / w));
+              w = maxW;
             }
-          })
-          .catch(function(err) {
+            canvas.width = w;
+            canvas.height = h;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            var dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+
             if (targetInput) {
-              targetInput.value = "";
+              targetInput.value = dataUrl;
               targetInput.style.color = "";
             }
-            alert("图片上传失败：" + err.message + "\n\n请检查：\n1. Token 是否有 repo 权限\n2. 网络是否正常\n3. 图片大小是否过大（建议 < 1MB）");
-          });
+
+            var preview = document.getElementById(previewId);
+            if (preview) {
+              preview.src = dataUrl;
+              preview.style.display = "block";
+            }
+          };
+          img.src = e.target.result;
         };
         reader.readAsDataURL(file);
       }
